@@ -1,0 +1,2 @@
+message_filters:robotics_hw1
+-DCATKIN_DEVEL_PREFIX=/home/samuele/AgileX/devel -DCMAKE_INSTALL_PREFIX=/home/samuele/AgileX/install -G Unix Makefiles
