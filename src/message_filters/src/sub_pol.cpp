@@ -2,6 +2,8 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Vector3Stamped.h"
 #include "robotics_hw1/MotorSpeed.h"
+#include "robotics_hw1/DiffDriveSpeed.h"
+#include "nav_msgs/Odometry.h"
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/exact_time.h>
@@ -11,9 +13,20 @@
 void callback(const robotics_hw1::MotorSpeedConstPtr& msg1, 
               const robotics_hw1::MotorSpeedConstPtr& msg2,
               const robotics_hw1::MotorSpeedConstPtr& msg3,
-              const robotics_hw1::MotorSpeedConstPtr& msg4) {
-  ROS_INFO ("Received 4 messages: (%f,%f,%f,%f)", 
-    msg1->rpm, msg2->rpm, msg3->rpm, msg4->rpm);
+              const robotics_hw1::MotorSpeedConstPtr& msg4,
+              const nav_msgs::OdometryConstPtr& msg5) {
+   ROS_INFO ("Received 4 messages: (%f,%f,%f)", 
+     ((msg1->rpm)+(msg3->rpm))*0.00055/2,((msg2->rpm)+(msg4->rpm))*0.00055/2, msg5->twist.twist.angular.z);
+   if (((((msg1->rpm)+(msg3->rpm))/2)<0&&(((msg2->rpm)+(msg4->rpm))/2)<0)||((((msg1->rpm)+(msg3->rpm))/2)>0&&(((msg2->rpm)+(msg4->rpm))/2)>0))
+   {
+     double y0=((((msg1->rpm)+(msg3->rpm))/2)+(((msg2->rpm)+(msg4->rpm))/2))*0.00055/msg5->twist.twist.angular.z;
+     ROS_INFO ("Estimated Y0: (%f)",y0);
+   }
+  
+  robotics_hw1::DiffDriveSpeed speed;
+  speed.speed_r=((msg1->rpm)+(msg3->rpm))*0.00055/2;
+  speed.speed_l=-((msg2->rpm)+(msg4->rpm))*0.00055/2;
+  //pub1.publish(speed);
 }
 
 int main(int argc, char** argv) {
@@ -21,16 +34,20 @@ int main(int argc, char** argv) {
 
   ros::NodeHandle n;
 
+  ros::Publisher pub1 = n.advertise<robotics_hw1::DiffDriveSpeed>("DiffDrive", 1000);
   message_filters::Subscriber<robotics_hw1::MotorSpeed> sub1(n, "motor_speed_fl", 1);
   message_filters::Subscriber<robotics_hw1::MotorSpeed> sub2(n, "motor_speed_fr", 1);
   message_filters::Subscriber<robotics_hw1::MotorSpeed> sub3(n, "motor_speed_rl", 1);
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub4(n, "motor_speed_rr", 1);  
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub4(n, "motor_speed_rr", 1);
+  message_filters::Subscriber<nav_msgs::Odometry> sub5(n, "scout_odom", 1);
+   
+
   //typedef message_filters::sync_policies::ExactTime<geometry_msgs::Vector3Stamped, geometry_msgs::Vector3Stamped> MySyncPolicy;
   typedef message_filters::sync_policies
-      ::ApproximateTime<robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed> MySyncPolicy;
+      ::ApproximateTime<robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, nav_msgs::Odometry> MySyncPolicy;
   
-  message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), sub1, sub2, sub3, sub4);
-  sync.registerCallback(boost::bind(&callback, _1, _2, _3, _4));
+  message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), sub1, sub2, sub3, sub4, sub5);
+  sync.registerCallback(boost::bind(&callback, _1, _2, _3, _4, _5));
 
   ros::spin();
 

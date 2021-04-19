@@ -60,6 +60,7 @@ void callback_1 (const robotics_hw1::MotorSpeedConstPtr& msg1,
     theta_bot=(-v_left+v_right)/(y0);
 
     geometry_msgs::TwistStamped msg_final;
+    msg_final.header.stamp=ros::Time::now();
     msg_final.twist.linear.x=v_bot;
     msg_final.twist.angular.z=theta_bot;
 

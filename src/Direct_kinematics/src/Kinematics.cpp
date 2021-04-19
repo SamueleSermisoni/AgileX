@@ -15,7 +15,9 @@ public:
   geometry_msgs::Pose2D position_old;
   nav_msgs::Odometry position_now_odom;
   double dt;
+  double time_old;
   bool integration_tipe;
+  int count=0;
 
 private:
   ros::NodeHandle n; 
@@ -25,43 +27,46 @@ private:
   
 public:
   pub_sub(){
-    sub = n.subscribe("/chatter", 1, &pub_sub::callback_m1, this);
+    sub = n.subscribe("velocity_bot", 1, &pub_sub::callback_m1, this);
     pub = n.advertise<nav_msgs::Odometry>("/rechatter", 1);
+    ROS_INFO("Creato");
   }
 
-  void callback_m1(const nav_msgs::Odometry::ConstPtr& msg){
+  void callback_m1(const geometry_msgs::TwistStamped::ConstPtr& msg){
+
     
-    position_now.x = msg->pose.pose.position.x;
-    position_now.y = msg->pose.pose.position.y;
+    speed=*msg;
+
+    tf::Quaternion q;
+    //     msg->pose.pose.orientation.x,
+    //     msg->pose.pose.orientation.y,
+    //     msg->pose.pose.orientation.z,
+    //     msg->pose.pose.orientation.w);
+    // tf::Matrix3x3 m(q);
+    // double roll, pitch, yaw;
+    // m.getRPY(roll, pitch, yaw);
+    // position_now.theta = yaw;
+
+    dt=speed.header.stamp.toSec()-time_old;
+    time_old=speed.header.stamp.toSec();
     
-    tf::Quaternion q(
-        msg->pose.pose.orientation.x,
-        msg->pose.pose.orientation.y,
-        msg->pose.pose.orientation.z,
-        msg->pose.pose.orientation.w);
-    tf::Matrix3x3 m(q);
-    double roll, pitch, yaw;
-    m.getRPY(roll, pitch, yaw);
-    position_now.theta = yaw;
-
-
-
-    if(integration_tipe)
+    if(count>1)
     {
-      position_now.x=position_old.x+speed.twist.linear.x*dt*cos(position_now.theta);
-      position_now.y=position_old.y+speed.twist.linear.x*dt*sin(position_now.theta);
-      position_now.theta=position_old.theta+speed.twist.angular.z*dt;
-      position_old=position_now;
-    }
-    else
-    {
-      position_now.x=position_old.x+speed.twist.linear.x*dt*cos(position_now.theta+speed.twist.angular.z*dt/2);
-      position_now.y=position_old.y+speed.twist.linear.x*dt*sin(position_now.theta+speed.twist.angular.z*dt/2);
-      position_now.theta=position_old.theta+speed.twist.angular.z*dt;
-      position_old=position_now;
-    }
-
-    position_now_odom.pose.pose.position.x=position_now.x;
+        if(integration_tipe)
+      {
+        position_now.x=position_old.x+speed.twist.linear.x*dt*cos(position_now.theta);
+        position_now.y=position_old.y+speed.twist.linear.x*dt*sin(position_now.theta);
+        position_now.theta=position_old.theta+speed.twist.angular.z*dt;
+        position_old=position_now;
+      }
+      else
+      {
+        position_now.x=position_old.x+speed.twist.linear.x*dt*cos(position_now.theta+speed.twist.angular.z*dt/2);
+        position_now.y=position_old.y+speed.twist.linear.x*dt*sin(position_now.theta+speed.twist.angular.z*dt/2);
+        position_now.theta=position_old.theta+speed.twist.angular.z*dt;
+        position_old=position_now;
+      }
+       position_now_odom.pose.pose.position.x=position_now.x;
     position_now_odom.pose.pose.position.y=position_now.y;
     q.setRPY(0,0,position_now.theta);
     q.normalize();
@@ -71,11 +76,19 @@ public:
     position_now_odom.pose.pose.orientation.w=q[4];
 
     pub.publish(position_now_odom);
+    ROS_INFO("%f", dt);
+    }
+    count++;
+    
+
+   
   }
 };
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "subscribe_and_publish");
+  ros::init(argc, argv, "Odometry");
+
+  ROS_INFO("NODE STARTED");
   
   pub_sub my_pub_sub;
   
