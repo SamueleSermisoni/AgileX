@@ -5,18 +5,29 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+
+
 class filter {
 
 public: 
   const float gear=30;
   const float r_wheel=0.1575; // wheel radius
   const float y0=1.34; // estimated skid-steering base
-
+  
 private:
-  ros::NodeHandle n;
 
+  ros::NodeHandle n;
   ros::Publisher pub; 
   float v_left, v_right, v_bot,theta_bot;
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub1;
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub2;
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub3;
+  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub4;
+  typedef message_filters::sync_policies
+      ::ApproximateTime<robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed> MySyncPolicy;
+  typedef message_filters::Synchronizer<MySyncPolicy> Sync;
+  boost::shared_ptr<Sync> sync;  
+
   
   
 
@@ -25,22 +36,17 @@ public:
   filter(){
 
   pub = n.advertise<geometry_msgs::TwistStamped>("velocity_bot", 1);
-
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub1(n, "motor_speed_fl", 1);
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub2(n, "motor_speed_fr", 1);
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub3(n, "motor_speed_rl", 1);
-  message_filters::Subscriber<robotics_hw1::MotorSpeed> sub4(n, "motor_speed_rr", 1);
-  typedef message_filters::sync_policies
-      ::ApproximateTime<robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed> MySyncPolicy;
-  message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), sub1, sub2, sub3, sub4);
-
-  sync.registerCallback(boost::bind(&filter::callback, this, _1, _2, _3, _4));
+  sub1.subscribe(n, "motor_speed_fl", 1);
+  sub2.subscribe(n, "motor_speed_fr", 1);
+  sub3.subscribe(n, "motor_speed_rl", 1);
+  sub4.subscribe(n, "motor_speed_rr", 1);
+  sync.reset(new Sync(MySyncPolicy(10), sub1, sub2, sub3, sub4));
+  sync->registerCallback(boost::bind(&filter::callback_1,this, _1, _2, _3, _4));
   ROS_INFO("Callback 0 triggered");
-
 
 }
 
-void callback (const robotics_hw1::MotorSpeedConstPtr& msg1, 
+void callback_1 (const robotics_hw1::MotorSpeedConstPtr& msg1, 
                const robotics_hw1::MotorSpeedConstPtr& msg2,
                const robotics_hw1::MotorSpeedConstPtr& msg3,
                const robotics_hw1::MotorSpeedConstPtr& msg4){
