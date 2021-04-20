@@ -69,14 +69,17 @@ public:
        position_now_odom.pose.pose.position.x=position_now.x;
     position_now_odom.pose.pose.position.y=position_now.y;
     q.setRPY(0,0,position_now.theta);
-    q.normalize();
-    position_now_odom.pose.pose.orientation.x=q[1];
-    position_now_odom.pose.pose.orientation.y=q[2];
-    position_now_odom.pose.pose.orientation.z=q[3];
-    position_now_odom.pose.pose.orientation.w=q[4];
+    //q.normalize();
+    position_now_odom.pose.pose.orientation.x=q[0];
+    position_now_odom.pose.pose.orientation.y=q[1];
+    position_now_odom.pose.pose.orientation.z=q[2];
+    position_now_odom.pose.pose.orientation.w=q[3];
+    position_now_odom.header.stamp=ros::Time::now();
+    position_now_odom.child_frame_id="robottino";
+    position_now_odom.header.frame_id="map";
 
     pub.publish(position_now_odom);
-    ROS_INFO("%f", dt);
+    ROS_INFO("%f", position_now.theta);
     }
     count++;
     
