@@ -16,16 +16,20 @@ void callback(const robotics_hw1::MotorSpeedConstPtr& msg1,
               const robotics_hw1::MotorSpeedConstPtr& msg4,
               const nav_msgs::OdometryConstPtr& msg5) {
    ROS_INFO ("Received 4 messages: (%f,%f,%f)", 
-     ((msg1->rpm)+(msg3->rpm))*0.00055/2,((msg2->rpm)+(msg4->rpm))*0.00055/2, msg5->twist.twist.angular.z);
+     ((msg1->rpm)+(msg3->rpm))*0.000434/2,((msg2->rpm)+(msg4->rpm))*0.000434/2, msg5->twist.twist.angular.z);
    if (((((msg1->rpm)+(msg3->rpm))/2)<0&&(((msg2->rpm)+(msg4->rpm))/2)<0)||((((msg1->rpm)+(msg3->rpm))/2)>0&&(((msg2->rpm)+(msg4->rpm))/2)>0))
    {
-     double y0=((((msg1->rpm)+(msg3->rpm))/2)+(((msg2->rpm)+(msg4->rpm))/2))*0.00055/msg5->twist.twist.angular.z;
+     double y0=((((msg1->rpm)+(msg3->rpm))/2)+(((msg2->rpm)+(msg4->rpm))/2))*0.000434/msg5->twist.twist.angular.z;
      ROS_INFO ("Estimated Y0: (%f)",y0);
    }
+
+  if (((((msg1->rpm)+(msg3->rpm))/2)<0&&(((msg2->rpm)+(msg4->rpm))/2)>0)||((((msg1->rpm)+(msg3->rpm))/2)>0&&(((msg2->rpm)+(msg4->rpm))/2)<0))
+   {
+     double gear= ((-msg1->rpm+msg2->rpm-msg3->rpm+msg4->rpm)*3.14*0.1575)/(4*30*msg5->twist.twist.linear.x);
+     ROS_INFO ("Estimated gear: (%f)",gear);
+   }
   
-  robotics_hw1::DiffDriveSpeed speed;
-  speed.speed_r=((msg1->rpm)+(msg3->rpm))*0.00055/2;
-  speed.speed_l=-((msg2->rpm)+(msg4->rpm))*0.00055/2;
+ 
   //pub1.publish(speed);
 }
 

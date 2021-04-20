@@ -53,8 +53,8 @@ void callback_1 (const robotics_hw1::MotorSpeedConstPtr& msg1,
 
     
     ROS_INFO("Callback 1 triggered");
-    v_left= ((msg1->rpm+msg3->rpm)*r_wheel*3.14)/(gear*60); // velocity in m/s ((rpm)*r_wheel* !2! *3.14)/( !2!  *gear* 60)
-    v_right=-((msg2->rpm+msg4->rpm)*r_wheel)*3.14/(gear*60);
+    v_left= -((msg1->rpm+msg3->rpm)*r_wheel*3.14)/(gear*60); // velocity in m/s ((rpm)*r_wheel* !2! *3.14)/( !2!  *gear* 60)
+    v_right=+((msg2->rpm+msg4->rpm)*r_wheel)*3.14/(gear*60);
 
     v_bot= (v_left+v_right)/2;
     theta_bot=(-v_left+v_right)/(y0);
