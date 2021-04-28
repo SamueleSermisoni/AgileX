@@ -1,4 +1,4 @@
 <launch>
-<node pkg="agilex" type="direct_kinematics" name="my_direct_kinematics"/>
+<node pkg="agilex" type="direct_kinematics" name="my_direct_kinematics" output="screen"/>
 <node pkg="filter_syncro" type="syncro" name="my_syncro"/>
 </launch>

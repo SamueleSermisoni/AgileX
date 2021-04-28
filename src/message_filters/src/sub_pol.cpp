@@ -15,11 +15,13 @@ void callback(const robotics_hw1::MotorSpeedConstPtr& msg1,
               const robotics_hw1::MotorSpeedConstPtr& msg3,
               const robotics_hw1::MotorSpeedConstPtr& msg4,
               const nav_msgs::OdometryConstPtr& msg5) {
+   const double est_gear= 38.20 ;
+
    ROS_INFO ("Received 4 messages: (%f,%f,%f)", 
      ((msg1->rpm)+(msg3->rpm))*0.000434/2,((msg2->rpm)+(msg4->rpm))*0.000434/2, msg5->twist.twist.angular.z);
    if (((((msg1->rpm)+(msg3->rpm))/2)<0&&(((msg2->rpm)+(msg4->rpm))/2)<0)||((((msg1->rpm)+(msg3->rpm))/2)>0&&(((msg2->rpm)+(msg4->rpm))/2)>0))
    {
-     double y0=((((msg1->rpm)+(msg3->rpm))/2)+(((msg2->rpm)+(msg4->rpm))/2))*0.000434/msg5->twist.twist.angular.z;
+     double y0=(((((msg1->rpm)+(msg3->rpm))/2)+(((msg2->rpm)+(msg4->rpm))/2))*3.14*0.1575)/(est_gear*30*msg5->twist.twist.angular.z);
      ROS_INFO ("Estimated Y0: (%f)",y0);
    }
 
