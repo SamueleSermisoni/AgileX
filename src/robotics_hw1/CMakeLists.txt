@@ -13,6 +13,7 @@ add_message_files(
   FILES
     MotorSpeed.msg
     DiffDriveSpeed.msg
+    CustomOdom.msg
 )
 
 generate_messages(
