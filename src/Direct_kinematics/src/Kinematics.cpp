@@ -8,6 +8,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <agilex/parametersConfig.h>
 #include <tf/transform_broadcaster.h>
+#include "robotics_hw1/CustomOdom.h"
 
 
 class pub_sub {
@@ -22,11 +23,16 @@ public:
   bool integration_type;
   int count=0;
   tf::TransformBroadcaster br; 
+  robotics_hw1::CustomOdom custom_msg;
 
 private:
   ros::NodeHandle n; 
   ros::Subscriber sub;
   ros::Publisher pub;
+  ros::Publisher pub2;
+  double x0, y0,theta0;
+
+
   dynamic_reconfigure::Server<agilex::parametersConfig> server;
   //boost::shared_ptr<Server> server;
   dynamic_reconfigure::Server<agilex::parametersConfig>::CallbackType f;
@@ -36,11 +42,18 @@ private:
 public:
   pub_sub(){
     sub = n.subscribe("velocity_bot", 1, &pub_sub::callback_m1, this);
-    pub = n.advertise<nav_msgs::Odometry>("/rechatter", 1);
+    pub = n.advertise<nav_msgs::Odometry>("/agilex_odom", 1);
+    pub2 = n.advertise<robotics_hw1::CustomOdom>("/custom_odom", 1);
 
 
     f = boost::bind(&pub_sub::callback_param, this, _1, _2);
     server.setCallback(f);
+
+    n.getParam("/x0_pose", position_old.x);
+    n.getParam("/y0_pose", position_old.y);
+    n.getParam("/theta0_pose", position_old.theta);
+    
+
     ROS_INFO("Creato");
 
   }
@@ -65,8 +78,9 @@ public:
     
     if(count>1)
     {
-        if(integration_type)
+        if(!integration_type)
       {
+        custom_msg.method.data= "Euler";
         position_now.x=position_old.x+speed.twist.linear.x*dt*cos(position_now.theta);
         position_now.y=position_old.y+speed.twist.linear.x*dt*sin(position_now.theta);
         position_now.theta=position_old.theta+speed.twist.angular.z*dt;
@@ -74,6 +88,7 @@ public:
       }
       else
       {
+        custom_msg.method.data= "Runge Kutta";
         position_now.x=position_old.x+speed.twist.linear.x*dt*cos(position_now.theta+speed.twist.angular.z*dt/2);
         position_now.y=position_old.y+speed.twist.linear.x*dt*sin(position_now.theta+speed.twist.angular.z*dt/2);
         position_now.theta=position_old.theta+speed.twist.angular.z*dt;
@@ -97,7 +112,8 @@ public:
     transform.setOrigin( tf::Vector3(position_now.x, position_now.y, 0) );
     transform.setRotation(q);
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "map", "agilex"));
-
+    custom_msg.odom= position_now_odom;
+    pub2.publish(custom_msg);
 
 
     ROS_INFO("%f", position_now.theta);

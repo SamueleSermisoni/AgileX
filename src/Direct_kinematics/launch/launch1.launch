@@ -1,4 +1,8 @@
 <launch>
 <node pkg="agilex" type="direct_kinematics" name="my_direct_kinematics" output="screen"/>
 <node pkg="filter_syncro" type="syncro" name="my_syncro"/>
+
+<param name="x0_pose" value="0.0" />
+<param name="y0_pose" value="0.0" />
+<param name="theta0_pose" value="0.0" />
 </launch>

@@ -3,7 +3,7 @@ project(agilex)
 
 
 
-find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure )
+find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure tf geometry_msgs)
 
 generate_dynamic_reconfigure_options(
   cfg/parameters.cfg

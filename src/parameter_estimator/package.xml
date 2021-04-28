@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>message_filters_example</name>
+  <name>estimator</name>
   <version>0.0.0</version>
-  <description>The message_filters_example package</description>
+  <description>Estimator of skid steering base and Gear ratio</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
