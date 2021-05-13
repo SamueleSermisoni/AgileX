@@ -23,8 +23,9 @@ private:
   message_filters::Subscriber<robotics_hw1::MotorSpeed> sub2;
   message_filters::Subscriber<robotics_hw1::MotorSpeed> sub3;
   message_filters::Subscriber<robotics_hw1::MotorSpeed> sub4;
+  message_filters::Subscriber<geometry_msgs::PoseStamped> sub5;
   typedef message_filters::sync_policies
-      ::ApproximateTime<robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed> MySyncPolicy;
+      ::ApproximateTime<robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, robotics_hw1::MotorSpeed, geometry_msgs::PoseStamped> MySyncPolicy;
   typedef message_filters::Synchronizer<MySyncPolicy> Sync;
   boost::shared_ptr<Sync> sync;  
 
@@ -40,8 +41,8 @@ public:
   sub2.subscribe(n, "motor_speed_fr", 1);
   sub3.subscribe(n, "motor_speed_rl", 1);
   sub4.subscribe(n, "motor_speed_rr", 1);
-  sync.reset(new Sync(MySyncPolicy(10), sub1, sub2, sub3, sub4));
-  sync->registerCallback(boost::bind(&filter::callback_1,this, _1, _2, _3, _4));
+  sync.reset(new Sync(MySyncPolicy(10), sub1, sub2, sub3, sub4, sub5));
+  sync->registerCallback(boost::bind(&filter::callback_1,this, _1, _2, _3, _4, _5));
   ROS_INFO("Callback 0 triggered");
 
 }
@@ -49,7 +50,8 @@ public:
 void callback_1 (const robotics_hw1::MotorSpeedConstPtr& msg1, 
                const robotics_hw1::MotorSpeedConstPtr& msg2,
                const robotics_hw1::MotorSpeedConstPtr& msg3,
-               const robotics_hw1::MotorSpeedConstPtr& msg4){
+               const robotics_hw1::MotorSpeedConstPtr& msg4,
+               const geometry_msgs::PoseStampedConstPtr& msg5){
 
     
     ROS_INFO("Callback 1 triggered");
@@ -62,6 +64,8 @@ void callback_1 (const robotics_hw1::MotorSpeedConstPtr& msg1,
     geometry_msgs::TwistStamped msg_final;
     msg_final.header.stamp=msg1->header.stamp;
     msg_final.twist.linear.x=v_bot;
+    msg_final.twist.linear.y=msg5->pose.position.x;
+    msg_final.twist.linear.z=msg5->pose.position.y;
     msg_final.twist.angular.z=theta_bot;
 
     pub.publish(msg_final);
