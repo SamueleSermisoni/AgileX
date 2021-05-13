@@ -3,14 +3,25 @@ project(agilex)
 
 
 
-find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure tf geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp dynamic_reconfigure tf geometry_msgs message_generation)
+
+add_service_files(
+  FILES
+  set_pose.srv
+  reset_pose.srv
+)
 
 generate_dynamic_reconfigure_options(
   cfg/parameters.cfg
   
 )
 
-catkin_package()
+generate_messages(
+DEPENDENCIES
+std_msgs
+)
+catkin_package(CATKIN_DEPENDS message_runtime)
+
 
 include_directories(include ${catkin_INCLUDE_DIRS})
 

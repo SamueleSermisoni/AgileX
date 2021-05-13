@@ -10,5 +10,5 @@ catkin_package( CATKIN_DEPENDS geometry_msgs message_filters robotics_hw1)
 ## Build talker and listener
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_executable(filter_subscriber_policy src/sub_pol.cpp)
-target_link_libraries(filter_subscriber_policy ${catkin_LIBRARIES})
+add_executable(parameter src/sub_pol.cpp)
+target_link_libraries(parameter ${catkin_LIBRARIES})

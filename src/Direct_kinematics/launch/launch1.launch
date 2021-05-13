@@ -1,8 +1,12 @@
 <launch>
+<param name="use_sim_time" value="true" />
+
+
 <node pkg="agilex" type="direct_kinematics" name="my_direct_kinematics" output="screen"/>
 <node pkg="filter_syncro" type="syncro" name="my_syncro"/>
 
-<param name="x0_pose" value="0.0" />
-<param name="y0_pose" value="0.0" />
-<param name="theta0_pose" value="0.0" />
+
+<param name="x0_pose" value="-0.8321" />
+<param name="y0_pose" value="0.4263" />
+<param name="theta0_pose" value="-0.5335" />
 </launch>
